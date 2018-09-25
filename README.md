@@ -25,22 +25,26 @@ First build the `partrep` package like a normal debian package, e.g. using
 `debuild -us -uc`. This will not result in a `.deb` but in in an `.udeb`
 package without any futher configuration.
 
-To use this in debian-installer image you have to build your own images.
-This sounds hard but is a very easy procedure:
+To use this in debian-installer you have to build your own image.
+This sounds hard but it is a very easy procedure:
 
-* create a container of the desired debian release and enable all deb
+* create a container of the desired Debian release and enable all deb
   and deb-src repos. Especially the latter are important. Run `apt-get update`.
 * `apt-get -y build-dep debian-installer`
-* `mkdir di ; apt-get source debian-installer`
+* `apt-get source debian-installer`
 * `cd debian-installer*`
 * `dpkg-checkbuilddeps`
 * `cd build`
-* Edit `config/common` and change everything (udebs as well as the target)
-  to fit your desired release.
+* Edit `config/common` and change everything (udeb source as well as the
+  target release) to fit your desired release
 * `cp /somewhere/partrep_*.udeb localudebs/`
 * `echo "partrep" >> pkg-lists/netboot/local`
   `echo "partman-base -" >> pkg-lists/netboot/local`
   Notice there is a minus (`-`) after the `partman-base ` in the last entry!
+  This will _exclude_ partman-base from the final image. Check in
+  `MANIFEST.udebs` after building for partrep to be included and partman-base
+  missing. This will not disable the installer from fetching partman-base, but
+  it will not be used since partrep provides the partman-base target.
 * `make build_netboot`
 
 After that your netboot release will be found in `dest/netboot/netboot.tar.gz`.
