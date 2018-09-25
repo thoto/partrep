@@ -95,5 +95,8 @@ swapon "/dev/${VGNAME}/swap"
 apt-install xfsprogs || true
 apt-install e2fsprogs || true
 apt-install lvm2 || true
+# for raid modules to be present in initrd
+apt-install dmraid || true
+apt-install mdadm || true
 
 exit 0
