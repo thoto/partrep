@@ -49,3 +49,12 @@ This sounds hard but it is a very easy procedure:
 
 After that your netboot release will be found in `dest/netboot/netboot.tar.gz`.
 It may be possible to build CD images accordingly but that is not tested yet.
+
+References
+==========
+
+* <http://ftp.gnome.org/pub/debian-meetings/2006/debconf6/slides/Debian_installer_workshop-Frans_Pop/paper/>
+* <http://blog.loftninjas.org/2007/07/04/complex-lvm-on-an-alternative-install-of-ubuntu-debian-installer/>
+* <https://wiki.debian.org/DebianInstaller/Modify/CustomKernel>
+* <https://salsa.debian.org/installer-team/debian-installer/blob/master/doc/devel/modules.txt>
+* <https://salsa.debian.org/installer-team/partman-base/tree/master/debian>
