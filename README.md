@@ -58,3 +58,14 @@ References
 * <https://wiki.debian.org/DebianInstaller/Modify/CustomKernel>
 * <https://salsa.debian.org/installer-team/debian-installer/blob/master/doc/devel/modules.txt>
 * <https://salsa.debian.org/installer-team/partman-base/tree/master/debian>
+
+Just a small hint: You may download and examine udebs easily by spinning up
+a container or chroot and replacing the repositories in `/etc/apt/sources.list`
+with the following line:
+```
+deb http://deb.debian.org/debian buster main/debian-installer
+```
+This will enable you to use the ususal debian package management tools to deal
+with udebs of your current release. Even `apt-get install` works -- but will
+likely break your system, of course.
+
