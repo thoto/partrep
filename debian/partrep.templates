@@ -1,0 +1,35 @@
+Template: partrep/disk-a
+Type: string
+Default: /dev/vda
+Description: first disk
+ First disk to install system onto
+
+Template: partrep/disk-b
+Type: string
+Default: /dev/vdb
+Description: second disk
+ Second disk to install system onto
+
+Template: partrep/sz-boot-mb
+Type: string
+Default: 200
+Description: size of boot partiton in MB
+ Size of the boot partition in MB
+
+Template: partrep/sz-sys-mb
+Type: string
+Default: 10240
+Description: size of system partiton in MB
+ Size of system partiton in MB
+
+Template: partrep/swap-factor
+Type: string
+Default: 2
+Description: factor times RAM size for swap partition
+ Factor times RAM size for swap partition
+
+Template: partrep/vgname
+Type: string
+Default: hvvg
+Description: name of volume group
+ Name of volume group

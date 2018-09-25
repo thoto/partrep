@@ -1,0 +1,99 @@
+#!/bin/sh -e
+
+set -e
+set -x
+
+logger "starting partman replacement..."
+# modprobe lvm
+
+swapoff -a
+
+DISK_A=$(debconf-get partrep/disk-a)
+DISK_B=$(debconf-get partrep/disk-b)
+
+# calculate RAM size for swap partition
+MEM_SZ_RAW=$(cat /proc/meminfo | grep MemTotal)
+echo $MEM_SZ_RAW | grep kB || { logger "mem not in kb" ; exit 1 ; }
+MEM_SZ_kB=$(echo $MEM_SZ_RAW |cut -d ':' -f 2|sed 's/^ *//g'|cut -d ' ' -f 1)
+MEM_SZ_MB=$(expr ${MEM_SZ_kB} / 1024)
+
+DEF_SZ_BOOT_MB=$(debconf-get partrep/sz-boot-mb)
+DEF_SZ_SYS_MB=$(debconf-get partrep/sz-sys-mb)
+DEF_SZ_SWAP_MB=$(expr ${MEM_SZ_MB} \* $(debconf-get partrep/swap-factor))
+DEF_SZ_LVM_MB=$(expr ${DEF_SZ_SYS_MB} + ${DEF_SZ_SWAP_MB})
+
+VGNAME="$(debconf-get partrep/vgname | tr -d ' ')"
+
+logger "determining if we need repartitioning"
+disk_sz_MB () {
+	expr $( [ -b "${1}" ] && blockdev --getsize64 "${1}" || echo 0 ) \
+		 / 1024 / 1024
+}
+
+check_repart () {
+	[ $(disk_sz_MB "${1}1") -lt ${DEF_SZ_BOOT_MB} ] && return 1
+	[ $(disk_sz_MB "${1}2") -lt ${DEF_SZ_LVM_MB} ] && return 1
+	[ ! -b "${1}3" ] && return 1
+	return 0
+}
+
+conditionally_partition () {
+	local bootable=""
+	if ! check_repart ${1} ; then
+		${2} && bootable=",*"
+		logger "repartitioning ${1}"
+		sfdisk --delete ${1} || true
+		sfdisk ${1} << EOF
+,${DEF_SZ_BOOT_MB}M,83${bootable}
+,${DEF_SZ_LVM_MB}M,8e
+,+,bf
+EOF
+	fi
+}
+
+conditionally_partition ${DISK_A} true
+conditionally_partition ${DISK_B} false
+
+logger "create filesystems"
+# remove volume group if already present
+vgscan
+vgdisplay "${VGNAME}" && vgremove -f "${VGNAME}"
+
+mkfs.ext2 -F -F -L "boot" "${DISK_A}1"
+dd if=/dev/zero of="${DISK_B}1" bs=4k count=1
+
+dd if=/dev/zero of="${DISK_A}2" bs=4k count=1
+dd if=/dev/zero of="${DISK_B}2" bs=4k count=1
+pvcreate -ffy "${DISK_A}2"
+pvcreate -ffy "${DISK_B}2"
+vgcreate "${VGNAME}" "${DISK_A}2" "${DISK_B}2"
+
+lvcreate -y -Wy -L "${DEF_SZ_SYS_MB}M" --mirrors 1 -n root "${VGNAME}"
+lvcreate -y -Wy -L "${DEF_SZ_SWAP_MB}M" --stripes 2 -n swap "${VGNAME}"
+
+mkfs.xfs -f -L "root" "/dev/${VGNAME}/root"
+mkswap -L "swap" "/dev/${VGNAME}/swap"
+
+logger "mount volumes prepare fstab"
+
+BOOT_UUID=$(blkid -s UUID -o value "${DISK_A}1")
+ROOT_UUID=$(blkid -s UUID -o value "/dev/${VGNAME}/root")
+
+[ -d /target ] || mkdir /target
+# notice: if we had a method to rescan partition UUIDs we would use that here
+mount -t xfs "/dev/${VGNAME}/root" /target
+mkdir /target/boot
+mount -t ext2 "${DISK_A}1" /target/boot
+mkdir /target/etc
+echo "UUID=${ROOT_UUID}	/	xfs	defaults,noatime	1	1" >> /target/etc/fstab
+echo "UUID=${BOOT_UUID}	/boot	ext2	defaults,noatime	1	2" >> /target/etc/fstab
+echo "/dev/${VGNAME}/swap	none	swap	sw	0	0" >> /target/etc/fstab
+# /proc and /sys are getting mounted automatically today
+
+swapon "/dev/${VGNAME}/swap"
+
+apt-install xfsprogs || true
+apt-install e2fsprogs || true
+apt-install lvm2 || true
+
+exit 0

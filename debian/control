@@ -1,0 +1,12 @@
+Source: partrep
+Section: debian-installer
+Priority: standard
+Maintainer: thoto <thoto@devtal.de>
+
+Package: partrep
+Package-Type: udeb
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, lvm2-udeb, xfsprogs-udeb, e2fsprogs-udeb, archdetect, harddrive-detection, di-utils-mapdevfs, di-utils (>= 1.66), cdebconf-udeb (>= 0.133)
+Provides: partman-auto, made-filesystems, mounted-partitions, partitioned-harddrives, created-fstab
+XB-Installer-Menu-Item: 4199
+Description: Partition the storage devices in custom way
