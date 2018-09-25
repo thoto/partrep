@@ -6,8 +6,8 @@ from debian-installer. It creates LVM LVs utilizing the RAID1 mirror feature
 of LVM, yet striping swap on both disks. It would have been possible
 to use MD-RAID but that would have disabled us from striping swap etc.
 
-It also creates an /boot partition on the first disk. Furthermore it leaves
-an partition free at the end to be used as ZFS cache volume later.
+It also creates a /boot partition on the first disk. Furthermore it leaves
+a partition free at the end to be used as ZFS cache volume later.
 
 There are multiple variables to tweak whilest installing in a preseeded
 configuration. These can be found in `debian/partrep.templates`.
