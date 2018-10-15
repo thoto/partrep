@@ -1,14 +1,20 @@
 Template: partrep/disk-a
 Type: string
-Default: /dev/vda
+Default: /dev/sda
 Description: first disk
  First disk to install system onto
 
 Template: partrep/disk-b
 Type: string
-Default: /dev/vdb
+Default: /dev/sdb
 Description: second disk
  Second disk to install system onto
+
+Template: partrep/sz-esp-mb
+Type: string
+Default: 200
+Description: size of EFI system partiton in MB
+ Size of the EFI system partition in MB
 
 Template: partrep/sz-boot-mb
 Type: string
@@ -21,6 +27,12 @@ Type: string
 Default: 10240
 Description: size of system partiton in MB
  Size of system partiton in MB
+
+Template: partrep/sz-slog-mb
+Type: string
+Default: 10240
+Description: size of zfs SLOG (ZIL) partiton in MB
+ Size of zfs SLOG (ZIL) partiton in MB
 
 Template: partrep/swap-factor
 Type: string
